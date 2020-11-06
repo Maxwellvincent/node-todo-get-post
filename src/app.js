@@ -32,8 +32,15 @@ const serializeTodo = todo => ({
 
 app
   .route('/v1/todos')
-  .get(/* Your code here */)
-  .post(/* Your code here */)
+  .get((req, res, next) => {
+      TodoService.getTodos(req.app.get('db'))
+        .then(todo => res.send(todo))
+  })
+
+  .post((req,res, next) => {
+    TodoService.insertTodo(req.app.get('db'),req.params.todo_id)
+      .then(response => res.json(response))
+  })
 
 app
   .route('/v1/todos/:todo_id')
