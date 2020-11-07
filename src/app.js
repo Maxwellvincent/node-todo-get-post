@@ -37,9 +37,28 @@ app
         .then(todo => res.send(todo))
   })
 
-  .post((req,res, next) => {
-    TodoService.insertTodo(req.app.get('db'),req.params.todo_id)
-      .then(response => res.json(response))
+  .post(jsonParser, (req,res, next) => {
+      const {title, completed = false} = req.body
+      const newTodo = {title};
+      for (const [key, value] of Object.entries(newTodo))
+        if(value == null)
+          return res.status(400).json({
+            error: {message: `Missing '${key}' in request body`}
+          })
+
+      newTodo.completed  = completed;
+
+      TodoService.insertTodo(
+        req.app.get('db'), 
+        newTodo
+      )
+        .then(todo => {
+          res
+          .status(201)
+          .location(path.posix.join(req.originalUrl, `/${todo.id}`))
+          .send(serializeTodo(todo))
+        })
+        .catch(next)
   })
 
 app
